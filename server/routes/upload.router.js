@@ -23,22 +23,19 @@ router.post('/', upload.single('file'), function(request, response){
   if(debug){console.log(file, 'file in upload.router');}
   let stream = fs.createReadStream(file.path);
     csv.fromStream(stream, {
-                    headers: ["col1", "col2","col3"], //headers must match the order of the queryText
+                    headers: ["col1", "col2", "col3"], //headers must match the order of the queryText
                     renameHeaders: true, //deletes the first line of the .csv file, renames it according to the headers property
                     ignoreEmpty: true,  //skips empty cells
                             })
     .on('data', function(data, callback){
       let queryText = `INSERT INTO "csv_spike_table" (col1, col2, col3)
-      VALUES ($1, $2, $3);`;
+                       VALUES ($1, $2, $3);`;
       pool.query(queryText, [data.col1, data.col2, data.col3])
       .then((result) => {
           if(debug){console.log('success in upload post', result);}
       }).catch((err) => {
           if(debug){console.log('error in upload post', err);}
       });
-    }).on("end", function(){
-      response.sendStatus(200);
-      if(debug){console.log(("done with upload"));}
     })
 });
 //end POST
